@@ -114,7 +114,7 @@ class PulseCasterUI(Gtk.Application):
                                              Gtk.IconLookupFlags.FORCE_SVG)
         Gtk.Window.set_default_icon(self.logo)
         self.gsettings = PulseCasterGSettings()
-        
+
         self.warning = self.builder.get_object('warning')
         self.add_window(self.warning)
         self.dismiss = self.builder.get_object('dismiss_warning')
@@ -123,7 +123,7 @@ class PulseCasterUI(Gtk.Application):
         self.dismiss.connect('clicked', self.hideWarn)
         self.warning.connect('destroy', self.on_close)
         self.warning.set_title(NAME)
-        
+
         # Miscellaneous dialog strings
         s = _('Important notice')
         self.builder.get_object('warning-label2').set_label('<big><big>'+
@@ -164,6 +164,7 @@ class PulseCasterUI(Gtk.Application):
         self.close.connect('clicked', self.on_close)
         self.record = self.builder.get_object('record_button')
         self.record_id = self.record.connect('clicked', self.on_record)
+        self.record.get_style_context().add_class("suggested-action")
         self.record.set_sensitive(True)
         self.main_logo = self.builder.get_object('logo')
         self.main_logo.set_from_icon_name('pulsecaster', Gtk.IconSize.DIALOG)
@@ -353,6 +354,8 @@ class PulseCasterUI(Gtk.Application):
 
         # FIXME: Dim elements other than the 'record' widget
         self.record.set_label(Gtk.STOCK_MEDIA_STOP)
+        self.record.get_style_context().remove_class("suggested-action")
+        self.record.get_style_context().add_class("destructive-action")
         self.record.disconnect(self.record_id)
         self.stop_id = self.record.connect('clicked', self.on_stop)
         self.record.show()
@@ -386,7 +389,7 @@ class PulseCasterUI(Gtk.Application):
         self.gsettings.change_warn(self.swckbox.get_active())
         self.warning.hide()
         self.main.show()
-    
+
     def showAbout(self, *args):
         self.about.show()
 
@@ -423,6 +426,8 @@ class PulseCasterUI(Gtk.Application):
                                                            Gtk.STOCK_OK,
                                                            Gtk.ResponseType.OK))
         self.file_chooser.set_local_only(True)
+        self.file_chooser.set_transient_for(self.main)
+        self.file_chooser.set_modal(True)
         response = self.file_chooser.run()
         if response == Gtk.ResponseType.OK:
             self.updateFileSinkPath()
@@ -444,6 +449,8 @@ class PulseCasterUI(Gtk.Application):
                                                  erase_message,
                                                  Gtk.ResponseType.YES),
                                         message_format=confirm_message)
+            confirm.set_transient_for(self.file_chooser)
+            confirm.set_modal(True)
             response = confirm.run()
             confirm.destroy()
             if response == Gtk.ResponseType.YES:
